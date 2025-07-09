@@ -1,6 +1,7 @@
 #pragma once
 
 #include "normal_iterator.hh"
+
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -107,12 +108,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         // TODO(gremble0): implement
     }
 
-    void reserve(size_type size) {
-        if (size <= capacity()) {
-            return;
-        }
-        // TODO(gremble0): implement
-    }
+    void reserve(size_type size);
 
     [[nodiscard]] constexpr reference operator[](size_type i) noexcept { return *(begin() + i); }
 
