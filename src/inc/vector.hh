@@ -50,6 +50,16 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
             return ret;
         }
 
+        constexpr iterator &operator-(size_type n) noexcept {
+            m_ptr -= n;
+            return *this;
+        }
+
+        constexpr iterator &operator+(size_type n) noexcept {
+            m_ptr += n;
+            return *this;
+        }
+
         constexpr bool operator==(const iterator &other) noexcept { return m_ptr == other.m_ptr; }
         constexpr bool operator!=(const iterator &other) noexcept { return !((*this) == other); }
 
