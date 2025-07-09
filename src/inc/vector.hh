@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstddef>
 #include <format>
+#include <initializer_list>
 #include <memory>
 #include <stdexcept>
 #include <utility>
@@ -20,11 +21,43 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     using pointer = T *;
     using const_pointer = const T *;
 
-    vector() noexcept : m_data(nullptr), m_capacity(default_capacity), m_size(0), m_allocator() {}
+    struct iterator {
+      public:
+        reference operator*() const { return *m_ptr; }
+        pointer operator->() const { return m_ptr; }
 
-    explicit vector(size_type size) noexcept : m_data(nullptr), m_capacity(size), m_size(0), m_allocator() {}
+        iterator &operator++() {
+            ++m_ptr;
+            return *this;
+        }
 
-    explicit vector(const allocator_type &allocator) noexcept
+        iterator &operator++(int) {
+            iterator ret = *this;
+            ++m_ptr;
+            return ret;
+        }
+
+        bool operator==(const iterator &other) { return m_ptr == other.m_ptr; }
+        bool operator!=(const iterator &other) { !((*this) == other); }
+
+      private:
+        pointer m_ptr;
+    };
+
+    constexpr vector() noexcept : m_data(nullptr), m_capacity(default_capacity), m_size(0) {}
+
+    constexpr explicit vector(size_type size) noexcept : m_data(nullptr), m_capacity(size), m_size(0) {}
+
+    constexpr vector(std::initializer_list<T> init)
+        : m_data(m_allocator.allocate(init.size())), m_capacity(init.size() /* * 2? */), m_size(init.size()) {
+        // TODO(gremble0): use this->begin() to iterate parallel with initializer list?
+        size_type i = 0;
+        for (const auto &x : init) {
+            m_data[i++] = x;
+        }
+    }
+
+    constexpr explicit vector(const allocator_type &allocator) noexcept
         : m_data(nullptr), m_capacity(size), m_size(0), m_allocator(allocator) {}
 
     ~vector() {
@@ -39,6 +72,10 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     vector(vector &&other) = delete;
     vector &operator=(vector &other) = delete;
     vector &operator=(vector &&other) = delete;
+
+    [[nodiscard]] constexpr iterator begin() const noexcept { return iterator{m_data}; }
+
+    [[nodiscard]] constexpr iterator end() const noexcept { return iterator{m_data + m_size}; }
 
     // TODO(gremble0): iterator (begin())
     [[nodiscard]] constexpr reference front() noexcept {
@@ -112,7 +149,10 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     // Newer c++ versions seem to return a reference to the inserted element for emplace_back, but not for push_back?
     // This seems weird. Returning a reference to the inserted element is rarely useful anyways so we keep the API
     // constistent by making it void instead
-    template <typename... Args> constexpr void emplace_back(Args... args);
+    template <typename... Args> constexpr void emplace_back(Args... args) {
+        value_type x{std::forward(args...)};
+        // TODO(gremble0) implement
+    }
 
   private:
     // This will be the capacity of a default initialized/empty vector
@@ -126,10 +166,10 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         }
     }
 
+    allocator_type m_allocator;
     T *m_data;
     size_type m_capacity;
     size_type m_size;
-    allocator_type m_allocator;
 };
 
 } // namespace nstd
