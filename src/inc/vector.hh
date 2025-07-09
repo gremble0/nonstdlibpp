@@ -33,14 +33,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     constexpr vector(std::initializer_list<T> init)
         : m_data(init.size() > 0 ? m_allocator.allocate(init.size()) : nullptr), m_capacity(init.size()),
           m_size(init.size()) {
-        try {
-            std::uninitialized_copy(init.begin(), init.end(), begin());
-        } catch (...) {
-            if (m_data) {
-                m_allocator.deallocate(m_data, m_capacity);
-            }
-            throw;
-        }
+        range_copy(init.begin(), init.end(), begin());
     }
 
     constexpr explicit vector(const allocator_type &allocator) noexcept
@@ -54,7 +47,10 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     }
 
     // TODO(gremble0): rule of five - should be implemented
-    vector(const vector &other) = delete;
+    vector(const vector &other)
+        : m_allocator(other.get_allocator()), m_capacity(other.capacity()), m_size(other.size()) {
+        range_copy(other.begin(), other.end(), begin());
+    }
     vector(vector &&other) = delete;
     vector &operator=(vector &other) = delete;
     vector &operator=(vector &&other) = delete;
@@ -98,6 +94,8 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     [[nodiscard]] constexpr const_pointer data() const noexcept { return m_data; }
 
     [[nodiscard]] constexpr pointer data() noexcept { return m_data; }
+
+    [[nodiscard]] constexpr allocator_type get_allocator() const noexcept { return m_allocator; }
 
     [[nodiscard]] constexpr bool empty() const noexcept { return m_size == 0; }
 
@@ -151,6 +149,20 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     constexpr void range_check(size_type i) {
         if (i >= size()) {
             throw std::out_of_range(std::format("Index {} out of range for vector of size {}", i, m_size));
+        }
+    }
+
+    template <typename FromIterator, typename ToIterator>
+    constexpr void range_copy(FromIterator from_start, FromIterator from_end, ToIterator to_start) {
+        try {
+            // uninitialized_copy is constexpr in c++26. With c++23 this constructor is not really constexpr, but I will
+            // leave it like this for the future.
+            std::uninitialized_copy(from_start, from_end, to_start);
+        } catch (...) {
+            if (m_data) {
+                m_allocator.deallocate(m_data, m_capacity);
+            }
+            throw;
         }
     }
 
