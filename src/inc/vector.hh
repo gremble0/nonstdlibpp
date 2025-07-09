@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cassert>
 #include <cstddef>
 #include <format>
@@ -23,9 +24,16 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
     struct iterator {
       public:
+        using value_type = vector::value_type;
+        using reference = vector::reference;
+        using pointer = vector::pointer;
+        using difference_type = std::ptrdiff_t;
+        using iterator_category = std::random_access_iterator_tag;
+
         constexpr explicit iterator(pointer ptr) : m_ptr(ptr) {}
 
         constexpr reference operator*() const noexcept { return *m_ptr; }
+
         constexpr pointer operator->() const noexcept { return m_ptr; }
 
         constexpr iterator &operator++() noexcept {
@@ -74,10 +82,13 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     constexpr explicit vector(size_type size) noexcept : m_data(nullptr), m_capacity(size), m_size(0) {}
 
     constexpr vector(std::initializer_list<T> init)
-        : m_data(m_allocator.allocate(init.size())), m_capacity(init.size() /* * 2? */), m_size(init.size()) {
-        iterator it = begin();
-        for (const auto &x : init) {
-            *(it++) = x;
+        : m_data(init.size() > 0 ? m_allocator.allocate(init.size()) : nullptr), m_capacity(init.size()),
+          m_size(init.size()) {
+        try {
+            std::uninitialized_copy(init.begin(), init.end(), begin());
+        } catch (...) {
+            clear();
+            throw;
         }
     }
 
@@ -197,7 +208,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         }
     }
 
-    // TODO(gremble0) empty base class optimization for allocator
+    // TODO(gremble0): empty base optimization for allocator
     allocator_type m_allocator;
     pointer m_data;
     size_type m_capacity;

@@ -15,11 +15,14 @@ TEST_CASE("Test vector constructors") {
         nstd::vector<int> vec{1, 2, 3};
         REQUIRE(!vec.empty());
         REQUIRE(vec.size() == 3);
+        REQUIRE(vec.capacity() == 3);
+        // There are accessor/iterator tests for checking each value gets initialized correctly
+        REQUIRE(vec.data() != nullptr);
     }
 }
 
 TEST_CASE("Test vector iterators") {
-    SECTION("Test foreach") {
+    SECTION("Test iterating with for each") {
         nstd::vector<int> vec{1, 2, 3};
         int i = 1;
         for (const auto &element : vec) {
@@ -43,5 +46,21 @@ TEST_CASE("Test vector iterators") {
         REQUIRE(*(vec.end() - 1) == 3);
         REQUIRE(*(vec.end() - 2) == 2);
         REQUIRE(*(vec.end() - 3) == 1);
+    }
+}
+
+TEST_CASE("Test vector accessors") {
+    nstd::vector<int> vec{1, 2, 3};
+    SECTION("Test subscript operator") {
+        REQUIRE(vec[0] == 1);
+        REQUIRE(vec[1] == 2);
+        REQUIRE(vec[2] == 3);
+    }
+
+    SECTION("Test vector::at") {
+        REQUIRE(vec.at(0) == 1);
+        REQUIRE(vec.at(1) == 2);
+        REQUIRE(vec.at(2) == 3);
+        REQUIRE_THROWS_AS(vec.at(3), std::out_of_range);
     }
 }
