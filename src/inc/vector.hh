@@ -62,6 +62,10 @@ public:
 
   [[nodiscard]] constexpr size_type size() const noexcept { return m_size; }
 
+  [[nodiscard]] constexpr size_type capacity() const noexcept {
+    return m_capacity;
+  }
+
   [[nodiscard]] constexpr const_pointer data() const noexcept { return m_data; }
 
   [[nodiscard]] constexpr pointer data() noexcept { return m_data; }
