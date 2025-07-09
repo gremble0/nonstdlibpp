@@ -46,12 +46,21 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         }
     }
 
-    // TODO(gremble0): rule of five - should be implemented
     vector(const vector &other)
         : m_allocator(other.get_allocator()), m_capacity(other.capacity()), m_size(other.size()) {
+        reserve(other.size());
         range_copy(other.begin(), other.end(), begin());
     }
-    vector(vector &&other) = delete;
+
+    vector(vector &&other) noexcept
+        : m_allocator(std::move(other.get_allocator())), m_data(other.data()), m_capacity(other.capacity()),
+          m_size(other.size()) {
+        other.m_data = nullptr;
+        other.m_capacity = 0;
+        other.m_size = 0;
+    }
+
+    // TODO(gremble0): rule of five - should be implemented
     vector &operator=(vector &other) = delete;
     vector &operator=(vector &&other) = delete;
 
@@ -106,7 +115,22 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         // TODO(gremble0): implement
     }
 
-    void reserve(size_type size);
+    void reserve(size_type size) {
+        if (size <= capacity()) {
+            return;
+        }
+
+        auto *new_data = m_allocator.allocate(size);
+
+        std::uninitialized_move(begin(), end(), new_data);
+        std::destroy(begin(), end());
+        if (m_data) {
+            m_allocator.deallocate(m_data, capacity());
+        }
+
+        m_data = new_data;
+        m_capacity = size;
+    }
 
     [[nodiscard]] constexpr reference operator[](size_type i) noexcept { return *(begin() + i); }
 

@@ -75,17 +75,20 @@ TEST_CASE("Test vector accessors") {
 
 TEST_CASE("Test vector allocations") {
     SECTION("Test vector::reserve") {
-        struct complex_type {
-            int x;
-            nstd::vector<int> values;
-        };
+        SECTION("Test reallocation") {
+            struct complex_type {
+                int x;
+                nstd::vector<int> values;
+            };
 
-        complex_type complex_variable1{.x = 2, .values = {1, 2, 3}};
-        complex_type complex_variable2{.x = 69, .values = {50, 42, 123}};
+            complex_type complex_variable1{.x = 2, .values = {1, 2, 3}};
+            complex_type complex_variable2{.x = 69, .values = {50, 42, 123}};
 
-        nstd::vector<complex_type> vec{complex_variable1, complex_variable2};
-        std::vector<int> a{1, 2};
-        REQUIRE(vec.capacity() == 20U);
-        // Check old items are still there
+            nstd::vector<complex_type> vec{complex_variable1, complex_variable2};
+            REQUIRE(vec.capacity() == 20U);
+            // Check old items are still there after reallocation
+            REQUIRE(vec[0].x == complex_variable1.x);
+            REQUIRE(vec[1].x == complex_variable2.x);
+        }
     }
 }
