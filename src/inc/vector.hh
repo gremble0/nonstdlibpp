@@ -47,7 +47,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     }
 
     vector(const vector &other)
-        : m_allocator(other.get_allocator()), m_capacity(other.capacity()), m_size(other.size()) {
+        : m_allocator(other.get_allocator()), m_data(nullptr), m_capacity(other.capacity()), m_size(other.size()) {
         reserve(other.size());
         range_copy(other.begin(), other.end(), begin());
     }
@@ -116,15 +116,12 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     }
 
     void reserve(size_type size) {
-        if (size <= capacity()) {
-            return;
-        }
-
         auto *new_data = m_allocator.allocate(size);
 
-        std::uninitialized_move(begin(), end(), new_data);
-        std::destroy(begin(), end());
         if (m_data) {
+            // Move data if we have any
+            std::uninitialized_move(begin(), end(), new_data);
+            std::destroy(begin(), end());
             m_allocator.deallocate(m_data, capacity());
         }
 

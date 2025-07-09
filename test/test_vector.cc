@@ -85,6 +85,7 @@ TEST_CASE("Test vector allocations") {
             complex_type complex_variable2{.x = 69, .values = {50, 42, 123}};
 
             nstd::vector<complex_type> vec{complex_variable1, complex_variable2};
+            vec.reserve(20U);
             REQUIRE(vec.capacity() == 20U);
             // Check old items are still there after reallocation
             REQUIRE(vec[0].x == complex_variable1.x);
