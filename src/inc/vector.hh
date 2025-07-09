@@ -5,6 +5,7 @@
 #include <format>
 #include <memory>
 #include <stdexcept>
+#include <utility>
 
 namespace nstd {
 
@@ -12,8 +13,10 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
   public:
     using size_type = std::size_t;
     using allocator_type = Allocator;
+    using value_type = T;
     using reference = T &;
     using const_reference = const T &;
+    using rvalue_reference = T &&;
     using pointer = T *;
     using const_pointer = const T *;
 
@@ -31,7 +34,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         }
     }
 
-    // TODO(gremble0): rule of five
+    // TODO(gremble0): rule of five - should be implemented
     vector(const vector &other) = delete;
     vector(vector &&other) = delete;
     vector &operator=(vector &other) = delete;
@@ -86,6 +89,15 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         range_check(i);
         return (*this)[i];
     }
+
+    constexpr void push_back(const_reference x) { emplace_back(x); }
+
+    constexpr void push_back(rvalue_reference x) { emplace_back(std::move(x)); }
+
+    // Newer c++ versions seem to return a reference to the inserted element for emplace_back, but not for push_back?
+    // This seems weird. Returning a reference to the inserted element is rarely useful anyways so we keep the API
+    // constistent by making it void instead
+    template <typename... Args> constexpr void emplace_back(Args... args);
 
   private:
     // This will be the capacity of a default initialized/empty vector
