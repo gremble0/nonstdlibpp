@@ -24,6 +24,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
     struct iterator {
       public:
+        // Needed as traits for several STL functions
         using value_type = vector::value_type;
         using reference = vector::reference;
         using pointer = vector::pointer;
@@ -87,7 +88,9 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         try {
             std::uninitialized_copy(init.begin(), init.end(), begin());
         } catch (...) {
-            clear();
+            if (m_data) {
+                m_allocator.deallocate(m_data, m_capacity);
+            }
             throw;
         }
     }
