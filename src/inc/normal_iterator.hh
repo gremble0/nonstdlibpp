@@ -53,7 +53,11 @@ template <typename Iterator, typename Container> struct normal_iterator {
 
     constexpr normal_iterator operator-(difference_type n) const noexcept { return normal_iterator{m_ptr - n}; }
 
+    constexpr difference_type operator-(const normal_iterator &other) const noexcept { return m_ptr - other.m_ptr; }
+
     constexpr normal_iterator operator+(difference_type n) const noexcept { return normal_iterator{m_ptr + n}; }
+
+    constexpr difference_type operator+(const normal_iterator &other) const noexcept { return m_ptr + other.m_ptr; }
 
     constexpr bool operator==(const normal_iterator &other) const noexcept { return m_ptr == other.m_ptr; }
 

@@ -64,6 +64,12 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     vector &operator=(vector &other) = delete;
     vector &operator=(vector &&other) = delete;
 
+    constexpr bool operator==(const vector &other) const {
+        return (size() == other.size()) && std::equal(begin(), end(), other.begin(), other.end());
+    }
+
+    constexpr bool operator!=(const vector &other) { return !(*this == other); }
+
     [[nodiscard]] constexpr iterator begin() noexcept { return iterator{m_data}; }
 
     [[nodiscard]] constexpr const_iterator begin() const noexcept { return const_iterator{m_data}; }
