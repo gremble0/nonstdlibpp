@@ -67,6 +67,8 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         pointer m_ptr;
     };
 
+    using const_iterator = const iterator;
+
     constexpr vector() noexcept : m_data(nullptr), m_capacity(default_capacity), m_size(0) {}
 
     constexpr explicit vector(size_type size) noexcept : m_data(nullptr), m_capacity(size), m_size(0) {}
@@ -95,9 +97,17 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     vector &operator=(vector &other) = delete;
     vector &operator=(vector &&other) = delete;
 
-    [[nodiscard]] constexpr iterator begin() const noexcept { return iterator{m_data}; }
+    [[nodiscard]] constexpr iterator begin() noexcept { return iterator{m_data}; }
 
-    [[nodiscard]] constexpr iterator end() const noexcept { return iterator{m_data + m_size}; }
+    [[nodiscard]] constexpr const_iterator begin() const noexcept { return const_iterator{m_data}; }
+
+    [[nodiscard]] constexpr const_iterator cbegin() const noexcept { return const_iterator{m_data}; }
+
+    [[nodiscard]] constexpr iterator end() noexcept { return iterator{m_data + m_size}; }
+
+    [[nodiscard]] constexpr const_iterator end() const noexcept { return const_iterator{m_data + m_size}; }
+
+    [[nodiscard]] constexpr const_iterator cend() const noexcept { return const_iterator{m_data + m_size}; }
 
     [[nodiscard]] constexpr iterator front() noexcept {
         assert(!empty());
@@ -187,6 +197,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         }
     }
 
+    // TODO(gremble0) empty base class optimization for allocator
     allocator_type m_allocator;
     pointer m_data;
     size_type m_capacity;
