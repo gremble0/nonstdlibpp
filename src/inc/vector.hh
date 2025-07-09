@@ -73,6 +73,16 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     [[nodiscard]] constexpr bool empty() const noexcept { return m_size == 0; }
 
     void clear() {
+        if (empty()) {
+            return;
+        }
+        // TODO(gremble0): implement
+    }
+
+    void reserve(size_type size) {
+        if (size <= capacity()) {
+            return;
+        }
         // TODO(gremble0): implement
     }
 
@@ -93,6 +103,11 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     constexpr void push_back(const_reference x) { emplace_back(x); }
 
     constexpr void push_back(rvalue_reference x) { emplace_back(std::move(x)); }
+
+    constexpr void pop_back() {
+        assert(!empty());
+        std::destroy_at(m_data[m_size - 1]);
+    }
 
     // Newer c++ versions seem to return a reference to the inserted element for emplace_back, but not for push_back?
     // This seems weird. Returning a reference to the inserted element is rarely useful anyways so we keep the API
