@@ -37,6 +37,17 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
             return ret;
         }
 
+        iterator &operator--() {
+            --m_ptr;
+            return *this;
+        }
+
+        iterator &operator--(int) {
+            iterator ret = *this;
+            --m_ptr;
+            return ret;
+        }
+
         bool operator==(const iterator &other) { return m_ptr == other.m_ptr; }
         bool operator!=(const iterator &other) { !((*this) == other); }
 
@@ -50,10 +61,9 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
     constexpr vector(std::initializer_list<T> init)
         : m_data(m_allocator.allocate(init.size())), m_capacity(init.size() /* * 2? */), m_size(init.size()) {
-        // TODO(gremble0): use this->begin() to iterate parallel with initializer list?
-        size_type i = 0;
+        iterator it = begin();
         for (const auto &x : init) {
-            m_data[i++] = x;
+            *(it++) = x;
         }
     }
 
@@ -78,25 +88,25 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     [[nodiscard]] constexpr iterator end() const noexcept { return iterator{m_data + m_size}; }
 
     // TODO(gremble0): iterator (begin())
-    [[nodiscard]] constexpr reference front() noexcept {
+    [[nodiscard]] constexpr iterator front() noexcept {
         assert(!empty());
-        return *m_data;
+        return begin();
     }
 
     [[nodiscard]] constexpr const_reference front() const noexcept {
         assert(!empty());
-        return *m_data;
+        return begin();
     };
 
     // TODO(gremble0): iterator (end() - 1)
-    [[nodiscard]] constexpr reference back() noexcept {
+    [[nodiscard]] constexpr iterator back() noexcept {
         assert(!empty());
-        return m_data[m_size - 1];
+        return end() - 1;
     };
 
     [[nodiscard]] constexpr const_reference back() const noexcept {
         assert(!empty());
-        return m_data[m_size - 1];
+        return end() - 1;
     }
 
     [[nodiscard]] constexpr size_type size() const noexcept { return m_size; }
@@ -123,9 +133,9 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         // TODO(gremble0): implement
     }
 
-    [[nodiscard]] constexpr reference operator[](size_type i) noexcept { return m_data[i]; }
+    [[nodiscard]] constexpr reference operator[](size_type i) noexcept { return *(begin() + i); }
 
-    [[nodiscard]] constexpr const_reference operator[](size_type i) const noexcept { return m_data[i]; }
+    [[nodiscard]] constexpr const_reference operator[](size_type i) const noexcept { return *(begin() + i); }
 
     [[nodiscard]] constexpr reference at(size_type i) {
         range_check(i);
@@ -143,7 +153,8 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
     constexpr void pop_back() {
         assert(!empty());
-        std::destroy_at(m_data[m_size - 1]);
+        --m_size;
+        std::destroy_at(end());
     }
 
     // Newer c++ versions seem to return a reference to the inserted element for emplace_back, but not for push_back?
