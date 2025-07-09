@@ -1,5 +1,6 @@
 #pragma once
 
+#include "normal_iterator.hh"
 #include <algorithm>
 #include <cassert>
 #include <cstddef>
@@ -21,62 +22,8 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     using rvalue_reference = T &&;
     using pointer = T *;
     using const_pointer = const T *;
-
-    struct iterator {
-      public:
-        // Needed as traits for several STL functions
-        using value_type = vector::value_type;
-        using reference = vector::reference;
-        using pointer = vector::pointer;
-        using difference_type = std::ptrdiff_t;
-        using iterator_category = std::random_access_iterator_tag;
-
-        constexpr explicit iterator(pointer ptr) : m_ptr(ptr) {}
-
-        constexpr reference operator*() const noexcept { return *m_ptr; }
-
-        constexpr pointer operator->() const noexcept { return m_ptr; }
-
-        constexpr iterator &operator++() noexcept {
-            ++m_ptr;
-            return *this;
-        }
-
-        constexpr iterator &operator++(int) noexcept {
-            iterator &ret = *this;
-            ++m_ptr;
-            return ret;
-        }
-
-        constexpr iterator &operator--() noexcept {
-            --m_ptr;
-            return *this;
-        }
-
-        constexpr iterator &operator--(int) noexcept {
-            iterator &ret = *this;
-            --m_ptr;
-            return ret;
-        }
-
-        constexpr iterator &operator-(size_type n) noexcept {
-            m_ptr -= n;
-            return *this;
-        }
-
-        constexpr iterator &operator+(size_type n) noexcept {
-            m_ptr += n;
-            return *this;
-        }
-
-        constexpr bool operator==(const iterator &other) noexcept { return m_ptr == other.m_ptr; }
-        constexpr bool operator!=(const iterator &other) noexcept { return !((*this) == other); }
-
-      private:
-        pointer m_ptr;
-    };
-
-    using const_iterator = const iterator;
+    using iterator = normal_iterator<pointer, vector>;
+    using const_iterator = normal_iterator<const_pointer, vector>;
 
     constexpr vector() noexcept : m_data(nullptr), m_capacity(default_capacity), m_size(0) {}
 
