@@ -23,33 +23,35 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
     struct iterator {
       public:
-        reference operator*() const { return *m_ptr; }
-        pointer operator->() const { return m_ptr; }
+        constexpr explicit iterator(pointer ptr) : m_ptr(ptr) {}
 
-        iterator &operator++() {
+        constexpr reference operator*() const noexcept { return *m_ptr; }
+        constexpr pointer operator->() const noexcept { return m_ptr; }
+
+        constexpr iterator &operator++() noexcept {
             ++m_ptr;
             return *this;
         }
 
-        iterator &operator++(int) {
-            iterator ret = *this;
+        constexpr iterator &operator++(int) noexcept {
+            iterator &ret = *this;
             ++m_ptr;
             return ret;
         }
 
-        iterator &operator--() {
+        constexpr iterator &operator--() noexcept {
             --m_ptr;
             return *this;
         }
 
-        iterator &operator--(int) {
-            iterator ret = *this;
+        constexpr iterator &operator--(int) noexcept {
+            iterator &ret = *this;
             --m_ptr;
             return ret;
         }
 
-        bool operator==(const iterator &other) { return m_ptr == other.m_ptr; }
-        bool operator!=(const iterator &other) { !((*this) == other); }
+        constexpr bool operator==(const iterator &other) noexcept { return m_ptr == other.m_ptr; }
+        constexpr bool operator!=(const iterator &other) noexcept { return !((*this) == other); }
 
       private:
         pointer m_ptr;
@@ -87,7 +89,6 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
     [[nodiscard]] constexpr iterator end() const noexcept { return iterator{m_data + m_size}; }
 
-    // TODO(gremble0): iterator (begin())
     [[nodiscard]] constexpr iterator front() noexcept {
         assert(!empty());
         return begin();
@@ -98,7 +99,6 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         return begin();
     };
 
-    // TODO(gremble0): iterator (end() - 1)
     [[nodiscard]] constexpr iterator back() noexcept {
         assert(!empty());
         return end() - 1;
@@ -178,7 +178,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     }
 
     allocator_type m_allocator;
-    T *m_data;
+    pointer m_data;
     size_type m_capacity;
     size_type m_size;
 };
