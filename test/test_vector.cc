@@ -1,3 +1,4 @@
+#include <initializer_list>
 #include <vector.hh>
 
 #include <catch2/catch_test_macros.hpp>
@@ -114,5 +115,20 @@ TEST_CASE("Test vector allocations") {
         REQUIRE(vec[1].x == complex_variable2.x);
         REQUIRE(vec[0] == complex_variable1);
         REQUIRE(vec[1] == complex_variable2);
+    }
+
+    SECTION("Test vector::clear") {
+        nstd::vector vec{1, 2, 3};
+        // Calling clear should call the destructor for each element in the vector and set the size to 0, but it should
+        // not do any dealloaction or allocation. The internal data should still point to the same memory after calling
+        // clear()
+        auto *data = vec.data();
+        REQUIRE(data != nullptr);
+        REQUIRE(vec.size() == 3);
+        REQUIRE(vec.capacity() == 3);
+
+        vec.clear();
+        REQUIRE(vec.data() == data);
+        REQUIRE(vec.size() == 0);
     }
 }

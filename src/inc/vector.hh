@@ -115,10 +115,8 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     [[nodiscard]] constexpr bool empty() const noexcept { return m_size == 0; }
 
     void clear() {
-        if (empty()) {
-            return;
-        }
-        // TODO(gremble0): implement
+        std::destroy(begin(), end());
+        m_size = 0;
     }
 
     void reserve(size_type size) {
