@@ -64,11 +64,11 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     vector &operator=(vector &other) = delete;
     vector &operator=(vector &&other) = delete;
 
-    constexpr bool operator==(const vector &other) const {
+    [[nodiscard]] constexpr bool operator==(const vector &other) const {
         return (size() == other.size()) && std::equal(begin(), end(), other.begin(), other.end());
     }
 
-    constexpr bool operator!=(const vector &other) { return !(*this == other); }
+    [[nodiscard]] constexpr bool operator!=(const vector &other) { return !(*this == other); }
 
     [[nodiscard]] constexpr iterator begin() noexcept { return iterator{m_data}; }
 
@@ -186,6 +186,8 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
             // leave it like this for the future.
             std::uninitialized_copy(from_start, from_end, to_start);
         } catch (...) {
+            // We cannot know the type of what is thrown here since it can depend on user defined types. We just have to
+            // catch everything and clean up before finishing
             if (m_data) {
                 m_allocator.deallocate(m_data, m_capacity);
             }
@@ -193,8 +195,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         }
     }
 
-    // TODO(gremble0): empty base optimization for allocator
-    allocator_type m_allocator;
+    [[no_unique_address]] allocator_type m_allocator;
     pointer m_data;
     size_type m_capacity;
     size_type m_size;
