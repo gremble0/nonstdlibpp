@@ -1,6 +1,7 @@
 #include <vector.hh>
 
 #include <catch2/catch_test_macros.hpp>
+#include <vector>
 
 // Used in some tests to ensure vectors construct/destruct/move/copy, etc. complex types properly
 struct complex_type {
@@ -9,6 +10,8 @@ struct complex_type {
 
     constexpr bool operator==(const complex_type &other) const { return x == other.x && values == other.values; }
 };
+
+TEST_CASE("Test vector size is same as STL") { STATIC_REQUIRE(sizeof(std::vector<int>) == sizeof(nstd::vector<int>)); }
 
 TEST_CASE("Test vector constructors") {
     SECTION("Test default constructor") {
