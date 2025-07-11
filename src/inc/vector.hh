@@ -33,11 +33,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
     constexpr explicit vector(size_type size) noexcept : m_capacity(size) {}
 
-    constexpr vector(std::initializer_list<T> init)
-        : m_data(init.size() > 0 ? m_allocator.allocate(init.size()) : nullptr), m_capacity(init.size()),
-          m_size(init.size()) {
-        range_copy(init.begin(), init.end(), begin());
-    }
+    constexpr vector(std::initializer_list<T> init) { range_initialize_n(std::move(init.begin()), init.size()); }
 
     constexpr explicit vector(const allocator_type &allocator) noexcept : m_allocator(allocator) {}
 
@@ -49,8 +45,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     }
 
     vector(const vector &other) : m_allocator(other.get_allocator()) {
-        reserve(other.size());
-        range_copy(other.begin(), other.end(), begin());
+        range_initialize_n(other.begin(), other.size());
     }
 
     vector(vector &&other) noexcept
@@ -120,22 +115,22 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         m_size = 0;
     }
 
-    void reserve(size_type size) {
-        if (size <= capacity()) {
+    void reserve(size_type n) {
+        if (n <= capacity()) {
             return;
         }
 
-        auto *new_data = m_allocator.allocate(size);
+        auto *new_data = m_allocator.allocate(n);
 
+        // Move data if we have any
         if (m_data) {
-            // Move data if we have any
             std::uninitialized_move(begin(), end(), new_data);
             std::destroy(begin(), end());
             m_allocator.deallocate(m_data, capacity());
         }
 
         m_data = new_data;
-        m_capacity = size;
+        m_capacity = n;
     }
 
     [[nodiscard]] constexpr reference operator[](size_type i) noexcept { return *(begin() + i); }
@@ -187,12 +182,13 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         }
     }
 
-    template <typename FromIterator, typename ToIterator>
-    constexpr void range_copy(FromIterator from_start, FromIterator from_end, ToIterator to_start) {
+    template <typename FromIterator> constexpr void range_initialize_n(FromIterator from_start, size_type n) {
+        reserve(n);
         try {
-            // uninitialized_copy is constexpr in c++26. With c++23 this constructor is not really constexpr, but I will
-            // leave it like this for the future.
-            std::uninitialized_copy(from_start, from_end, to_start);
+            // uninitialized_copy_n is constexpr in c++26. With c++23 this constructor is not really constexpr, but I
+            // will leave it like this for the future.
+            std::uninitialized_copy_n(from_start, n, begin());
+            m_size = n;
         } catch (...) {
             // We cannot know the type of what is thrown here since it can depend on user defined types. We just have to
             // catch everything and clean up before finishing
@@ -203,7 +199,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         }
     }
 
-    [[no_unique_address]] allocator_type m_allocator;
+    [[no_unique_address]] allocator_type m_allocator{};
     pointer m_data{nullptr};
     size_type m_capacity{0};
     size_type m_size{0};
