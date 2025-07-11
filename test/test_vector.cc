@@ -1,4 +1,5 @@
 #include <initializer_list>
+#include <utility>
 #include <vector.hh>
 
 #include <catch2/catch_test_macros.hpp>
@@ -70,6 +71,7 @@ TEST_CASE("Test vector iterators") {
 
 TEST_CASE("Test vector accessors") {
     nstd::vector vec{1, 2, 3};
+
     SECTION("Test vector::operator[]") {
         REQUIRE(vec[0] == 1);
         REQUIRE(vec[1] == 2);
@@ -81,6 +83,16 @@ TEST_CASE("Test vector accessors") {
         REQUIRE(vec.at(1) == 2);
         REQUIRE(vec.at(2) == 3);
         REQUIRE_THROWS_AS(vec.at(3), std::out_of_range);
+    }
+
+    SECTION("Test vector::front") {
+        REQUIRE(vec.front() == 1);
+        REQUIRE(std::as_const(vec).front() == 1);
+    }
+
+    SECTION("Test vector::back") {
+        REQUIRE(vec.back() == 3);
+        REQUIRE(std::as_const(vec).back() == 3);
     }
 }
 
