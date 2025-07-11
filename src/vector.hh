@@ -44,11 +44,11 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         }
     }
 
-    vector(const vector &other) : m_allocator(other.get_allocator()) {
+    constexpr vector(const vector &other) : m_allocator(other.get_allocator()) {
         range_initialize_n(other.begin(), other.size());
     }
 
-    vector(vector &&other) noexcept
+    constexpr vector(vector &&other) noexcept
         : m_allocator(std::move(other.get_allocator())), m_data(other.data()), m_capacity(other.capacity()),
           m_size(other.size()) {
         other.m_data = nullptr;
@@ -57,8 +57,19 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     }
 
     // TODO(gremble0): rule of five - should be implemented
-    vector &operator=(vector &other) = delete;
-    vector &operator=(vector &&other) = delete;
+    constexpr vector &operator=(const vector &other) {
+        if (this == &other) {
+            return *this;
+        }
+
+        range_initialize_n(other.begin(), other.size());
+        return *this;
+    }
+
+    constexpr vector &operator=(vector &&other) noexcept {
+        range_move_n(other.begin(), other.size());
+        return *this;
+    }
 
     [[nodiscard]] constexpr bool operator==(const vector &other) const {
         return (size() == other.size()) && std::equal(begin(), end(), other.begin(), other.end());
@@ -115,7 +126,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         m_size = 0;
     }
 
-    void reserve(size_type n) {
+    constexpr void reserve(size_type n) {
         if (n <= capacity()) {
             return;
         }
@@ -124,6 +135,8 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
         // Move data if we have any
         if (m_data) {
+            // Regarding constexpr validity - same as usage of uninitialize_copy. Usage of this is not really constexpr
+            // until c++26
             std::uninitialized_move(begin(), end(), new_data);
             std::destroy(begin(), end());
             m_allocator.deallocate(m_data, capacity());
@@ -147,27 +160,26 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         return (*this)[i];
     }
 
-    // TODO(gremble0): STL has constexpr push/emplace_back. We cant do this right now because reserve() is not constexpr
-    void push_back(const_reference x) { emplace_back(x); }
+    constexpr void push_back(const_reference x) { emplace_back(x); }
 
-    void push_back(rvalue_reference x) { emplace_back(std::move(x)); }
-
-    constexpr void pop_back() noexcept {
-        assert(!empty());
-        --m_size;
-        std::destroy_at(end());
-    }
+    constexpr void push_back(rvalue_reference x) { emplace_back(std::move(x)); }
 
     // Newer c++ versions seem to return a reference to the inserted element for emplace_back, but not for push_back?
     // This seems weird. Returning a reference to the inserted element is rarely useful anyways so we keep the API
     // constistent by making it void instead
-    template <typename... Args> void emplace_back(Args &&...args) {
+    template <typename... Args> constexpr void emplace_back(Args &&...args) {
         if (m_size >= m_capacity) {
             reserve(m_capacity == 0 ? s_default_capacity : m_capacity * s_growth_factor);
         }
 
         std::construct_at(&*end(), std::forward<Args>(args)...);
         ++m_size;
+    }
+
+    constexpr void pop_back() noexcept {
+        assert(!empty());
+        --m_size;
+        std::destroy_at(&*end());
     }
 
   private:
@@ -182,12 +194,30 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         }
     }
 
+    // TODO(gremble0): conditional noexcept
     template <typename FromIterator> constexpr void range_initialize_n(FromIterator from_start, size_type n) {
         reserve(n);
         try {
             // uninitialized_copy_n is constexpr in c++26. With c++23 this constructor is not really constexpr, but I
             // will leave it like this for the future.
             std::uninitialized_copy_n(from_start, n, begin());
+            m_size = n;
+        } catch (...) {
+            // We cannot know the type of what is thrown here since it can depend on user defined types. We just have to
+            // catch everything and clean up before finishing
+            if (m_data) {
+                m_allocator.deallocate(m_data, m_capacity);
+            }
+            throw;
+        }
+    }
+
+    template <typename FromIterator> constexpr void range_move_n(FromIterator from_start, size_type n) {
+        reserve(n);
+        try {
+            // uninitialized_move_n is constexpr in c++26. With c++23 this constructor is not really constexpr, but I
+            // will leave it like this for the future.
+            std::uninitialized_move_n(from_start, n, begin());
             m_size = n;
         } catch (...) {
             // We cannot know the type of what is thrown here since it can depend on user defined types. We just have to

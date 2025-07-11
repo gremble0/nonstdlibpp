@@ -171,4 +171,18 @@ TEST_CASE("Test push and pop") {
         REQUIRE(vec[0].x == 2);
         REQUIRE(vec[0].values == nstd::vector{1, 2, 3});
     }
+
+    SECTION("Test vector::pop_back") {
+        nstd::vector vec{1, 2, 3};
+        REQUIRE(vec.size() == 3);
+        REQUIRE(vec.back() == 3);
+
+        vec.pop_back();
+        REQUIRE(vec.size() == 2);
+        REQUIRE(vec.back() == 2);
+
+        vec.pop_back();
+        REQUIRE(vec.size() == 1);
+        REQUIRE(vec.back() == 1);
+    }
 }
