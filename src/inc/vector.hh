@@ -26,7 +26,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     using iterator = normal_iterator<pointer, vector>;
     using const_iterator = normal_iterator<const_pointer, vector>;
 
-    constexpr vector() noexcept : m_data(nullptr), m_capacity(default_capacity), m_size(0) {}
+    constexpr vector() noexcept : m_data(nullptr), m_capacity(s_default_capacity), m_size(0) {}
 
     constexpr explicit vector(size_type size) noexcept : m_data(nullptr), m_capacity(size), m_size(0) {}
 
@@ -147,9 +147,10 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         return (*this)[i];
     }
 
-    constexpr void push_back(const_reference x) { emplace_back(x); }
+    // TODO(gremble0): STL has constexpr push/emplace_back. We cant do this right now because reserve() is not constexpr
+    void push_back(const_reference x) { emplace_back(x); }
 
-    constexpr void push_back(rvalue_reference x) { emplace_back(std::move(x)); }
+    void push_back(rvalue_reference x) { emplace_back(std::move(x)); }
 
     constexpr void pop_back() {
         assert(!empty());
@@ -160,16 +161,21 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     // Newer c++ versions seem to return a reference to the inserted element for emplace_back, but not for push_back?
     // This seems weird. Returning a reference to the inserted element is rarely useful anyways so we keep the API
     // constistent by making it void instead
-    template <typename... Args> constexpr void emplace_back(Args... args) {
-        value_type x{std::forward(args...)};
-        // TODO(gremble0) implement
+    template <typename... Args> void emplace_back(Args &&...args) {
+        value_type x{std::forward<Args>(args)...};
+        if (m_size >= m_capacity) {
+            reserve(m_capacity * s_growth_factor);
+        }
+        *end() = x;
+
+        ++m_size;
     }
 
   private:
     // This will be the capacity of a default initialized/empty vector
-    static constexpr size_type default_capacity = 8;
+    static constexpr size_type s_default_capacity = 8;
     // How much should the vector grow when it needs to resize?
-    static constexpr size_type growth_factor = 2;
+    static constexpr size_type s_growth_factor = 2;
 
     constexpr void range_check(size_type i) {
         if (i >= size()) {

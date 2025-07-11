@@ -88,9 +88,9 @@ TEST_CASE("Test equality operator") {
     complex_type complex_variable1{.x = 2, .values = {1, 2, 3}};
     complex_type complex_variable2{.x = 69, .values = {50, 42, 123}};
 
-    nstd::vector<complex_type> vec1{complex_variable1, complex_variable2};
-    nstd::vector<complex_type> vec2{complex_variable1, complex_variable2};
-    nstd::vector<complex_type> vec3{complex_variable2, complex_variable1};
+    nstd::vector vec1{complex_variable1, complex_variable2};
+    nstd::vector vec2{complex_variable1, complex_variable2};
+    nstd::vector vec3{complex_variable2, complex_variable1};
 
     REQUIRE(vec1 == vec2);
     REQUIRE(vec1 != vec3);
@@ -107,7 +107,7 @@ TEST_CASE("Test vector allocations") {
         complex_type complex_variable1{.x = 2, .values = {1, 2, 3}};
         complex_type complex_variable2{.x = 69, .values = {50, 42, 123}};
 
-        nstd::vector<complex_type> vec{complex_variable1, complex_variable2};
+        nstd::vector vec{complex_variable1, complex_variable2};
         vec.reserve(20U);
         REQUIRE(vec.capacity() == 20U);
         // Check old items are still there after reallocation
@@ -130,5 +130,26 @@ TEST_CASE("Test vector allocations") {
         vec.clear();
         REQUIRE(vec.data() == data);
         REQUIRE(vec.size() == 0);
+    }
+}
+
+TEST_CASE("Test push and pop") {
+    SECTION("Test vector::push_back") {
+        nstd::vector vec{1, 2, 3};
+        vec.push_back(2);
+        REQUIRE(vec.size() == 4);
+        REQUIRE(vec[3] == 2);
+    }
+
+    SECTION("Test vector::emplace_back") {
+        nstd::vector vec{1, 2, 3};
+        vec.emplace_back(2);
+        REQUIRE(vec.size() == 4);
+        REQUIRE(vec[3] == 2);
+    }
+
+    SECTION("Test vector::emplace_back constructs in place") {
+        nstd::vector<complex_type> vec;
+        vec.emplace_back(2, {1, 2, 3});
     }
 }
