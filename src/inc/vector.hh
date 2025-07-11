@@ -39,7 +39,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         range_copy(init.begin(), init.end(), begin());
     }
 
-    constexpr explicit vector(const allocator_type &allocator) noexcept : m_capacity(size), m_allocator(allocator) {}
+    constexpr explicit vector(const allocator_type &allocator) noexcept : m_allocator(allocator) {}
 
     constexpr ~vector() noexcept {
         clear();
@@ -48,8 +48,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         }
     }
 
-    vector(const vector &other)
-        : m_allocator(other.get_allocator()), m_data(nullptr), m_capacity(other.capacity()), m_size(other.size()) {
+    vector(const vector &other) : m_allocator(other.get_allocator()) {
         reserve(other.size());
         range_copy(other.begin(), other.end(), begin());
     }
@@ -84,24 +83,24 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
     [[nodiscard]] constexpr const_iterator cend() const noexcept { return const_iterator{m_data + m_size}; }
 
-    [[nodiscard]] constexpr iterator front() noexcept {
+    [[nodiscard]] constexpr reference front() noexcept {
         assert(!empty());
-        return begin();
+        return *begin();
     }
 
     [[nodiscard]] constexpr const_reference front() const noexcept {
         assert(!empty());
-        return begin();
+        return *begin();
     };
 
-    [[nodiscard]] constexpr iterator back() noexcept {
+    [[nodiscard]] constexpr reference back() noexcept {
         assert(!empty());
-        return end() - 1;
+        return *(end() - 1);
     };
 
     [[nodiscard]] constexpr const_reference back() const noexcept {
         assert(!empty());
-        return end() - 1;
+        return *(end() - 1);
     }
 
     [[nodiscard]] constexpr size_type size() const noexcept { return m_size; }
@@ -122,6 +121,10 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     }
 
     void reserve(size_type size) {
+        if (size <= capacity()) {
+            return;
+        }
+
         auto *new_data = m_allocator.allocate(size);
 
         if (m_data) {
@@ -165,7 +168,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     // constistent by making it void instead
     template <typename... Args> void emplace_back(Args &&...args) {
         if (m_size >= m_capacity) {
-            reserve(m_capacity * s_growth_factor);
+            reserve(m_capacity == 0 ? s_default_capacity : m_capacity * s_growth_factor);
         }
 
         std::construct_at(&*end(), std::forward<Args>(args)...);
