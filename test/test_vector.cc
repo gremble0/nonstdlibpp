@@ -19,7 +19,7 @@ TEST_CASE("Test vector constructors") {
         nstd::vector<int> vec;
         REQUIRE(vec.empty());
         REQUIRE(vec.size() == 0U);
-        REQUIRE(vec.capacity() == 8U);
+        REQUIRE(vec.capacity() == 0U);
         REQUIRE(vec.data() == nullptr);
     }
 
@@ -149,7 +149,14 @@ TEST_CASE("Test push and pop") {
     }
 
     SECTION("Test vector::emplace_back constructs in place") {
+        // std::vector also seems to be unable to deduce the type of the second parameter unless we explicitly name the
+        // constructor. e.g.:
+        // vec.emplace_back(2, {1, 2, 3});
+        //                     ^ it cannot deduce the type of this initializer_list.
+        // Our implementation has the same issue, but since the STL also has the same, I will not look into it.
         nstd::vector<complex_type> vec;
-        vec.emplace_back(2, {1, 2, 3});
+        vec.emplace_back(2, nstd::vector{1, 2, 3});
+        REQUIRE(vec[0].x == 2);
+        REQUIRE(vec[0].values == nstd::vector{1, 2, 3});
     }
 }

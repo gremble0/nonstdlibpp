@@ -11,6 +11,9 @@
 #include <stdexcept>
 #include <utility>
 
+// STL marks several destructor calling functions noexcept, even though they internally calls destructors that are not
+// necessarily noexcept ? We do the same here, so just use noexcept for these functions to stay consistent with the STL
+
 namespace nstd {
 
 template <typename T, typename Allocator = std::allocator<T>> class vector {
@@ -26,9 +29,9 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     using iterator = normal_iterator<pointer, vector>;
     using const_iterator = normal_iterator<const_pointer, vector>;
 
-    constexpr vector() noexcept : m_data(nullptr), m_capacity(s_default_capacity), m_size(0) {}
+    constexpr vector() = default;
 
-    constexpr explicit vector(size_type size) noexcept : m_data(nullptr), m_capacity(size), m_size(0) {}
+    constexpr explicit vector(size_type size) noexcept : m_capacity(size) {}
 
     constexpr vector(std::initializer_list<T> init)
         : m_data(init.size() > 0 ? m_allocator.allocate(init.size()) : nullptr), m_capacity(init.size()),
@@ -36,10 +39,9 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         range_copy(init.begin(), init.end(), begin());
     }
 
-    constexpr explicit vector(const allocator_type &allocator) noexcept
-        : m_data(nullptr), m_capacity(size), m_size(0), m_allocator(allocator) {}
+    constexpr explicit vector(const allocator_type &allocator) noexcept : m_capacity(size), m_allocator(allocator) {}
 
-    ~vector() {
+    constexpr ~vector() noexcept {
         clear();
         if (m_data) {
             m_allocator.deallocate(m_data, m_capacity);
@@ -114,7 +116,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
     [[nodiscard]] constexpr bool empty() const noexcept { return m_size == 0; }
 
-    void clear() {
+    constexpr void clear() noexcept {
         std::destroy(begin(), end());
         m_size = 0;
     }
@@ -152,7 +154,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
     void push_back(rvalue_reference x) { emplace_back(std::move(x)); }
 
-    constexpr void pop_back() {
+    constexpr void pop_back() noexcept {
         assert(!empty());
         --m_size;
         std::destroy_at(end());
@@ -162,12 +164,11 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     // This seems weird. Returning a reference to the inserted element is rarely useful anyways so we keep the API
     // constistent by making it void instead
     template <typename... Args> void emplace_back(Args &&...args) {
-        value_type x{std::forward<Args>(args)...};
         if (m_size >= m_capacity) {
             reserve(m_capacity * s_growth_factor);
         }
-        *end() = x;
 
+        std::construct_at(&*end(), std::forward<Args>(args)...);
         ++m_size;
     }
 
@@ -200,9 +201,9 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     }
 
     [[no_unique_address]] allocator_type m_allocator;
-    pointer m_data;
-    size_type m_capacity;
-    size_type m_size;
+    pointer m_data{nullptr};
+    size_type m_capacity{0};
+    size_type m_size{0};
 };
 
 } // namespace nstd
