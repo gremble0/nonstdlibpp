@@ -29,7 +29,23 @@ TEST_CASE("Test vector rule of 5") {
         REQUIRE(copy[2] == vec[2]);
     }
 
-    SECTION("Test copy assignment operator") {}
+    SECTION("Test copy assignment operator") {
+        nstd::vector vec{1, 2, 3};
+        // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+        nstd::vector copied(vec);
+
+        // Check data is now inside the `copied` object
+        REQUIRE(copied.size() == 3);
+        REQUIRE(copied[0] == 1);
+        REQUIRE(copied[1] == 2);
+        REQUIRE(copied[2] == 3);
+
+        // Data in the copied from object should still be there
+        REQUIRE(vec.size() == 3);
+        REQUIRE(vec[0] == 1);
+        REQUIRE(vec[1] == 2);
+        REQUIRE(vec[2] == 3);
+    }
 
     SECTION("Test move constructor") {
         nstd::vector vec{1, 2, 3};
@@ -50,11 +66,19 @@ TEST_CASE("Test vector rule of 5") {
     }
 
     SECTION("Test move assignment operator") {
-        nstd::vector vec1 = nstd::vector{1, 2, 3};
-        REQUIRE(vec1.size() == 3);
-        REQUIRE(vec1[0] == 1);
-        REQUIRE(vec1[1] == 2);
-        REQUIRE(vec1[2] == 3);
+        nstd::vector vec{1, 2, 3};
+        nstd::vector moved = std::move(vec);
+
+        // Check data is now inside the `moved` object
+        REQUIRE(moved.size() == 3);
+        REQUIRE(moved[0] == 1);
+        REQUIRE(moved[1] == 2);
+        REQUIRE(moved[2] == 3);
+
+        // Data in the moved from object should be empty
+        REQUIRE(vec.size() == 0);
+        REQUIRE(vec.data() == nullptr);
+        REQUIRE(vec.capacity() == 0);
     }
 }
 
