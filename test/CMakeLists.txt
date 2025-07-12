@@ -1,5 +1,6 @@
 set(TESTS
   test_vector.cc
+  test_unique_ptr.cc
 )
 
 find_package(Catch2 3 REQUIRED)
