@@ -48,6 +48,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         range_initialize_n(other.begin(), other.size());
     }
 
+    // TODO(gremble): std::exchange
     constexpr vector(vector &&other) noexcept
         : m_allocator(std::move(other.get_allocator())), m_data(other.data()), m_capacity(other.capacity()),
           m_size(other.size()) {
@@ -56,17 +57,22 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
         other.m_size = 0;
     }
 
-    // TODO(gremble0): rule of five - should be implemented
     constexpr vector &operator=(const vector &other) {
         if (this == &other) {
             return *this;
         }
 
+        clear();
         range_initialize_n(other.begin(), other.size());
         return *this;
     }
 
     constexpr vector &operator=(vector &&other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+
+        clear();
         range_move_n(other.begin(), other.size());
         return *this;
     }

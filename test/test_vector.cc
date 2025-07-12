@@ -15,6 +15,49 @@ struct complex_type {
 
 TEST_CASE("Test vector size is same as STL") { STATIC_REQUIRE(sizeof(std::vector<int>) == sizeof(nstd::vector<int>)); }
 
+TEST_CASE("Test vector rule of 5") {
+    SECTION("Test destructor") {}
+
+    SECTION("Test copy constructor") {
+        nstd::vector vec{1, 2, 3};
+        // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+        nstd::vector copy(vec);
+        REQUIRE(copy.size() == vec.size());
+        REQUIRE(copy.capacity() == vec.capacity());
+        REQUIRE(copy[0] == vec[0]);
+        REQUIRE(copy[1] == vec[1]);
+        REQUIRE(copy[2] == vec[2]);
+    }
+
+    SECTION("Test copy assignment operator") {}
+
+    SECTION("Test move constructor") {
+        nstd::vector vec{1, 2, 3};
+        auto *vec_data = vec.data();
+        auto vec_size = vec.size();
+        auto vec_capacity = vec.capacity();
+
+        nstd::vector moved(std::move(vec));
+        // Check data is now inside the `moved` object
+        REQUIRE(moved.data() == vec_data);
+        REQUIRE(moved.size() == vec_size);
+        REQUIRE(moved.capacity() == vec_capacity);
+
+        // Data in the moved from object should be empty
+        REQUIRE(vec.size() == 0);
+        REQUIRE(vec.data() == nullptr);
+        REQUIRE(vec.capacity() == 0);
+    }
+
+    SECTION("Test move assignment operator") {
+        nstd::vector vec1 = nstd::vector{1, 2, 3};
+        REQUIRE(vec1.size() == 3);
+        REQUIRE(vec1[0] == 1);
+        REQUIRE(vec1[1] == 2);
+        REQUIRE(vec1[2] == 3);
+    }
+}
+
 TEST_CASE("Test vector constructors") {
     SECTION("Test default constructor") {
         nstd::vector<int> vec;
@@ -96,7 +139,7 @@ TEST_CASE("Test vector accessors") {
     }
 }
 
-TEST_CASE("Test equality operator") {
+TEST_CASE("Test vector::operator==") {
     complex_type complex_variable1{.x = 2, .values = {1, 2, 3}};
     complex_type complex_variable2{.x = 69, .values = {50, 42, 123}};
 
