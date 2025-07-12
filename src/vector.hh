@@ -50,12 +50,8 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
 
     // TODO(gremble): std::exchange
     constexpr vector(vector &&other) noexcept
-        : m_allocator(std::move(other.get_allocator())), m_data(other.data()), m_capacity(other.capacity()),
-          m_size(other.size()) {
-        other.m_data = nullptr;
-        other.m_capacity = 0;
-        other.m_size = 0;
-    }
+        : m_allocator(std::move(other.get_allocator())), m_data(std::exchange(other.m_data, nullptr)),
+          m_capacity(std::exchange(other.m_capacity, 0)), m_size(std::exchange(other.m_size, 0)) {}
 
     constexpr vector &operator=(const vector &other) {
         if (this == &other) {
