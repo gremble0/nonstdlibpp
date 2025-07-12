@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <utility>
 
 namespace nstd {
@@ -43,7 +44,7 @@ template <typename T, typename Deleter = default_delete<T>> class unique_ptr {
 
     constexpr pointer operator->() const noexcept { return get(); }
 
-    constexpr explicit operator bool() const noexcept { return get() != nullptr; }
+    [[nodiscard]] constexpr explicit operator bool() const noexcept { return get() != nullptr; }
 
     constexpr void reset(pointer ptr) noexcept {
         // In case deleter throws, do the deletion last. STL has a contract where custom deleters should not throw, but
@@ -71,6 +72,21 @@ template <typename T, typename Deleter = default_delete<T>> class unique_ptr {
 
 template <typename T, typename... Args> constexpr unique_ptr<T> make_unique(Args... args) {
     return unique_ptr(new T{std::forward<Args>(args)...});
+}
+
+template <typename T, typename TDeleter, typename U, typename UDeleter>
+[[nodiscard]] inline constexpr bool operator==(const unique_ptr<T, TDeleter> &a, const unique_ptr<U, UDeleter> &b) {
+    return a.get() == b.get();
+}
+
+template <typename T, typename TDeleter>
+[[nodiscard]] inline constexpr bool operator==(const unique_ptr<T, TDeleter> &a, std::nullptr_t) {
+    return a.get() == nullptr;
+}
+
+template <typename T, typename TDeleter>
+[[nodiscard]] inline constexpr bool operator==(std::nullptr_t, const unique_ptr<T, TDeleter> &a) {
+    return a.get() == nullptr;
 }
 
 } // namespace nstd
