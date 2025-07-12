@@ -209,23 +209,29 @@ TEST_CASE("Test vector allocations") {
         vec.clear();
         REQUIRE(vec.data() == data);
         REQUIRE(vec.size() == 0);
+        REQUIRE(vec.capacity() == 3);
     }
 }
 
 TEST_CASE("Test push and pop") {
-    SECTION("Test vector::push_back") {
+    auto test_vector_append = [](void (nstd::vector<int>::*append_method)(const int &x)) {
         nstd::vector vec{1, 2, 3};
-        vec.push_back(2);
-        REQUIRE(vec.size() == 4);
-        REQUIRE(vec[3] == 2);
-    }
+        auto *old_data = vec.data();
+        REQUIRE(vec.size() == 3);
+        REQUIRE(vec.capacity() == 3);
 
-    SECTION("Test vector::emplace_back") {
-        nstd::vector vec{1, 2, 3};
-        vec.emplace_back(2);
+        (vec.*append_method)(2);
         REQUIRE(vec.size() == 4);
         REQUIRE(vec[3] == 2);
-    }
+
+        // Should reallocate here
+        REQUIRE(vec.capacity() > 3);
+        REQUIRE(vec.data() != old_data);
+    };
+
+    SECTION("Test vector::push_back") { test_vector_append(&nstd::vector<int>::push_back); }
+
+    SECTION("Test vector::emplace_back") { test_vector_append(&nstd::vector<int>::emplace_back); }
 
     SECTION("Test vector::emplace_back constructs in place") {
         // std::vector also seems to be unable to deduce the type of the second parameter unless we explicitly name the
