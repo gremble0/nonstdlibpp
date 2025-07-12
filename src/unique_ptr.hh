@@ -74,6 +74,9 @@ template <typename T, typename... Args> constexpr unique_ptr<T> make_unique(Args
     return unique_ptr(new T{std::forward<Args>(args)...});
 }
 
+// The parameters have separate templated types because its necessary for types that may have some relation with
+// eachother, but that are not the same. E.g. comparing two unrelated types won't work anyways, but comparing two
+// classes related by inheritance will.
 template <typename T, typename TDeleter, typename U, typename UDeleter>
 [[nodiscard]] inline constexpr bool operator==(const unique_ptr<T, TDeleter> &a, const unique_ptr<U, UDeleter> &b) {
     return a.get() == b.get();

@@ -41,3 +41,40 @@ TEST_CASE("Test unique_ptr rule of 5") {
         REQUIRE(*moved.get() == 2);
     }
 }
+
+TEST_CASE("Test unique_ptr operator==") {
+    SECTION("Same value") {
+        auto heap_int1 = nstd::make_unique<int>(2);
+        auto heap_int2 = nstd::make_unique<int>(2);
+        REQUIRE(heap_int1 != heap_int2);
+    }
+
+    SECTION("Different value") {
+        auto heap_int1 = nstd::make_unique<int>(1);
+        auto heap_int2 = nstd::make_unique<int>(2);
+        REQUIRE(heap_int1 != heap_int2);
+    }
+
+    SECTION("Same pointer") {
+        auto heap_int1 = nstd::make_unique<int>(1);
+        REQUIRE(heap_int1 == heap_int1);
+    }
+
+    SECTION("Default constructed unique_ptr with nullptr literal") {
+        nstd::unique_ptr<int> a;
+        REQUIRE(a == nullptr);
+        REQUIRE(nullptr == a);
+    }
+
+    SECTION("Related by inheritance") {
+        struct base {
+            int a;
+        };
+
+        struct child : base {};
+
+        auto heap_child1 = nstd::make_unique<child>();
+        auto heap_child2 = nstd::make_unique<base>();
+        REQUIRE(heap_child1 != heap_child2);
+    }
+}
