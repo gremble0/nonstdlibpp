@@ -214,31 +214,34 @@ TEST_CASE("Test vector allocations") {
 }
 
 TEST_CASE("Test push and pop") {
-    auto test_vector_append = [](void (nstd::vector<int>::*append_method)(const int &x)) {
-        nstd::vector vec{1, 2, 3};
+    auto test_vector_append = []<typename T>(nstd::vector<T> vec, void (nstd::vector<T>::*append_method)(const T &x),
+                                             T x) {
         auto *old_data = vec.data();
         REQUIRE(vec.size() == 3);
         REQUIRE(vec.capacity() == 3);
 
-        (vec.*append_method)(2);
+        (vec.*append_method)(x);
         REQUIRE(vec.size() == 4);
-        REQUIRE(vec[3] == 2);
+        REQUIRE(vec[3] == x);
 
         // Should reallocate here
         REQUIRE(vec.capacity() > 3);
         REQUIRE(vec.data() != old_data);
     };
 
-    SECTION("Test vector::push_back") { test_vector_append(&nstd::vector<int>::push_back); }
+    SECTION("Test vector::push_back") { test_vector_append(nstd::vector{1, 2, 3}, &nstd::vector<int>::push_back, 4); }
 
-    SECTION("Test vector::emplace_back") { test_vector_append(&nstd::vector<int>::emplace_back); }
+    SECTION("Test vector::emplace_back") {
+        test_vector_append(nstd::vector{1, 2, 3}, &nstd::vector<int>::emplace_back, 4);
+    }
 
     SECTION("Test vector::emplace_back constructs in place") {
         // std::vector also seems to be unable to deduce the type of the second parameter unless we explicitly name the
         // constructor. e.g.:
         // vec.emplace_back(2, {1, 2, 3});
         //                     ^ it cannot deduce the type of this initializer_list.
-        // Our implementation has the same issue, but since the STL also has the same, I will not look into it.
+        // Our implementation has the same issue, but since the STL also has the same, I will not look into it (it may
+        // not be possible with the current c++ implementation?)
         nstd::vector<complex_type> vec;
         vec.emplace_back(2, nstd::vector{1, 2, 3});
         REQUIRE(vec[0].x == 2);
