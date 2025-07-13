@@ -41,10 +41,10 @@ class shared_count {
   public:
     constexpr shared_count() noexcept = default;
 
+    constexpr explicit shared_count(shared_count_base *count) noexcept : m_count(count) { assert(m_count); }
+
     shared_count(const shared_count &other) {
-        if (other.m_count == nullptr) {
-            m_count = new shared_count_base;
-        } else {
+        if (other.m_count != nullptr) {
             m_count = other.m_count;
             m_count->add_reference();
         }
@@ -87,7 +87,11 @@ template <typename T> class shared_ptr {
 
   private:
     pointer m_ptr{nullptr};
-    shared_count m_counter{};
+    shared_count m_count{};
 };
+
+template <typename T, typename... Args> constexpr shared_ptr<T> make_shared(Args... args) {
+    return shared_ptr(new T{std::forward<Args>(args)...});
+}
 
 } // namespace nstd
