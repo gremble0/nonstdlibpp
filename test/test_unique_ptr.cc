@@ -16,7 +16,7 @@ TEST_CASE("Test unique_ptr size is same as STL") {
 TEST_CASE("Test make_unique") {
     SECTION("Test basic usage") {
         auto heap_int = nstd::make_unique<int>(2);
-        REQUIRE(*heap_int.get() == 2);
+        REQUIRE(*heap_int == 2);
     }
 
     SECTION("Test for complex types") {
@@ -36,14 +36,14 @@ TEST_CASE("Test unique_ptr rule of 5") {
         auto heap_int = nstd::make_unique<int>(2);
         nstd::unique_ptr<int> moved(std::move(heap_int));
         REQUIRE(heap_int.get() == nullptr);
-        REQUIRE(*moved.get() == 2);
+        REQUIRE(*moved == 2);
     }
 
     SECTION("Test move assignment operator") {
         auto heap_int = nstd::make_unique<int>(2);
         nstd::unique_ptr<int> moved = std::move(heap_int);
         REQUIRE(heap_int.get() == nullptr);
-        REQUIRE(*moved.get() == 2);
+        REQUIRE(*moved == 2);
     }
 }
 

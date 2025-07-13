@@ -44,6 +44,8 @@ template <typename T, typename Deleter = default_delete<T>> class unique_ptr {
 
     constexpr pointer operator->() const noexcept { return get(); }
 
+    constexpr T &operator*() const noexcept { return *get(); }
+
     [[nodiscard]] constexpr explicit operator bool() const noexcept { return get() != nullptr; }
 
     constexpr void reset(pointer ptr) noexcept {
