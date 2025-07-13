@@ -1,14 +1,30 @@
 #pragma once
 
+#include <atomic>
 #include <cassert>
 #include <cstddef>
 
 namespace nstd {
 
-// TODO(gremble0): deleter template
-struct control_block {
-    size_t ref_count;
-    size_t weak_count;
+// TODO(gremble0): deleter template, maybe some allocator stuff elsewhere too
+class shared_count_base {
+  public:
+    constexpr void release() noexcept {
+        --m_ref_count;
+        --m_weak_count;
+    }
+
+    constexpr void weak_release() noexcept { --m_weak_count; }
+
+  private:
+    // TODO(gremble0): maybe some smarter locking - here we have to lock and unlock twice when strong releasing
+    std::atomic<size_t> m_ref_count = 1;
+    std::atomic<size_t> m_weak_count = 1;
+};
+
+class shared_count {
+  private:
+    shared_count_base *m_count;
 };
 
 template <typename T> class shared_ptr {
@@ -17,25 +33,17 @@ template <typename T> class shared_ptr {
 
     constexpr shared_ptr() noexcept = default;
 
-    constexpr explicit shared_ptr(pointer ptr) : m_ptr(ptr), m_cb(1, 1) {}
+    constexpr explicit shared_ptr(pointer ptr) noexcept : m_ptr(ptr) {}
 
     constexpr shared_ptr(const shared_ptr &other) = default;
 
-    constexpr shared_ptr(pointer ptr, control_block *cb) : m_ptr(ptr), m_cb(cb) { assert(m_cb); }
-
-    constexpr ~shared_ptr() noexcept {
-        if (m_cb->ref_count <= 1) {
-            delete m_ptr;
-        } else {
-            --m_cb->ref_count;
-        }
-    }
+    constexpr ~shared_ptr() noexcept = default;
 
     constexpr pointer get() { return m_ptr; }
 
   private:
     pointer m_ptr;
-    control_block m_cb;
+    shared_count m_counter;
 };
 
 } // namespace nstd
