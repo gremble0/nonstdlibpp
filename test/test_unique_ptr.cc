@@ -1,12 +1,17 @@
 #include "unique_ptr.hh"
 
 #include <catch2/catch_test_macros.hpp>
+#include <memory>
 
 struct complex_type {
     int x;
     int y;
     void *v;
 };
+
+TEST_CASE("Test unique_ptr size is same as STL") {
+    STATIC_REQUIRE(sizeof(std::unique_ptr<int>) == sizeof(nstd::unique_ptr<int>));
+}
 
 TEST_CASE("Test make_unique") {
     SECTION("Test basic usage") {
