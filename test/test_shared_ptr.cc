@@ -36,6 +36,18 @@ TEST_CASE("Test shared_ptr rule of 5") {
         auto copied(heap_int);
         REQUIRE(heap_int.use_count() == 2);
         REQUIRE(copied.use_count() == 2);
+
+        // Ensure ref count gets decremented properly
+        {
+            // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
+            auto another_copy(copied);
+            REQUIRE(heap_int.use_count() == 3);
+            REQUIRE(copied.use_count() == 3);
+            REQUIRE(another_copy.use_count() == 3);
+        }
+
+        REQUIRE(heap_int.use_count() == 2);
+        REQUIRE(copied.use_count() == 2);
     }
 
     // SECTION("Test move constructor") {
