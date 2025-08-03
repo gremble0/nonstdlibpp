@@ -189,7 +189,7 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     // How much should the vector grow when it needs to resize?
     static constexpr size_type s_growth_factor = 2;
 
-    constexpr void range_check(size_type i) {
+    constexpr void range_check(size_type i) const {
         if (i >= size()) {
             throw std::out_of_range(std::format("Index {} out of range for vector of size {}", i, m_size));
         }

@@ -3,7 +3,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <stdexcept>
-#include <string>
 
 TEST_CASE("Test string constructors") {
     SECTION("Default constructor") {
@@ -21,8 +20,22 @@ TEST_CASE("Test string constructors") {
         }
     }
 
+    SECTION("const char *") {
+        const char *c_str = "hello";
+        nstd::string s = c_str;
+        REQUIRE(s.data() != nullptr);
+        REQUIRE(s.data() != c_str);
+    }
+
     SECTION("Copy constructor") {
-        //
+        SECTION("const char *") {
+            nstd::string a("abc");
+            REQUIRE(a == "abcd");
+        }
+        SECTION("string") {
+            nstd::string a(nstd::string("abc"));
+            REQUIRE(a == "abcd");
+        }
     }
 
     SECTION("Move constructor") {
@@ -47,5 +60,16 @@ TEST_CASE("Trivial accessors") {
         nstd::string s(10, 'h');
         REQUIRE_NOTHROW(s.at(9));
         REQUIRE_THROWS_AS(s.at(10), std::out_of_range);
+    }
+}
+
+TEST_CASE("Test equality operators") {
+    SECTION("const char *") {
+        nstd::string s = "hello world";
+        REQUIRE(s == "hello world");
+    }
+    SECTION("string") {
+        nstd::string s = "hello world";
+        REQUIRE(s == nstd::string("hello world"));
     }
 }
