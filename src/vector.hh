@@ -64,6 +64,10 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     }
 
     constexpr vector &operator=(vector &&other) noexcept {
+        clear();
+        if (m_data) {
+            m_allocator.deallocate(m_data, m_capacity);
+        }
         m_allocator = std::exchange(other.m_allocator, allocator_type());
         m_data = std::exchange(other.m_data, nullptr);
         m_capacity = std::exchange(other.m_capacity, 0);

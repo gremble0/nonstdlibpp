@@ -40,7 +40,7 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
         }
 
         if (m_data) {
-            m_allocator.deallocate(m_data, m_size);
+            m_allocator.deallocate(m_data, m_size + 1);
         }
 
         m_size = other.m_size;
@@ -59,7 +59,7 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
         }
 
         if (m_data) {
-            m_allocator.deallocate(m_data, m_size);
+            m_allocator.deallocate(m_data, m_size + 1);
         }
 
         m_size = std::exchange(other.m_size, 0);
@@ -68,7 +68,7 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
         return *this;
     }
 
-    constexpr ~basic_string() noexcept { m_allocator.deallocate(m_data, m_size); }
+    constexpr ~basic_string() noexcept { m_allocator.deallocate(m_data, m_size + 1); }
 
     [[nodiscard]] constexpr const CharT *data() const noexcept { return m_data; }
 
