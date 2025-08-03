@@ -52,7 +52,7 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
 
     [[nodiscard]] constexpr const_reference operator[](size_type i) const noexcept { return m_data[i]; }
 
-    [[nodiscard]] constexpr bool operator==(const basic_string &&other) const noexcept {
+    [[nodiscard]] constexpr bool operator==(const basic_string &other) const noexcept {
         if (size() != other.size()) {
             return false;
         }

@@ -30,11 +30,11 @@ TEST_CASE("Test string constructors") {
     SECTION("Copy constructor") {
         SECTION("const char *") {
             nstd::string a("abc");
-            REQUIRE(a == "abcd");
+            REQUIRE(a == "abc");
         }
         SECTION("string") {
             nstd::string a(nstd::string("abc"));
-            REQUIRE(a == "abcd");
+            REQUIRE(a == "abc");
         }
     }
 
