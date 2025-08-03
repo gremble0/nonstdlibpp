@@ -39,7 +39,12 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
 
     constexpr ~basic_string() noexcept { m_allocator.deallocate(m_data, m_size); }
 
-    [[nodiscard]] constexpr CharT *data() const noexcept { return m_data; }
+    [[nodiscard]] constexpr const CharT *data() const noexcept { return m_data; }
+
+    [[nodiscard]] constexpr CharT *data() noexcept { return m_data; }
+
+    // c_str does not have mutable overload
+    [[nodiscard]] constexpr const CharT *c_str() const noexcept { return m_data; }
 
     [[nodiscard]] constexpr size_type size() const noexcept { return m_size; }
 
