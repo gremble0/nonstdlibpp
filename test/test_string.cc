@@ -60,7 +60,15 @@ TEST_CASE("Test string constructors") {
     }
 
     SECTION("Move assignment operator") {
-        //
+        const char *cstr = "hello world";
+        nstd::string s = cstr;
+        nstd::string moved;
+        moved = std::move(s);
+        REQUIRE(s.data() == nullptr);
+        REQUIRE(moved.data() != nullptr);
+        REQUIRE(s.size() == 0);
+        REQUIRE(moved.size() != 0);
+        REQUIRE(moved == cstr);
     }
 }
 

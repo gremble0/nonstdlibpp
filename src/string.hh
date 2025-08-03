@@ -35,7 +35,6 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
     }
 
     constexpr basic_string &operator=(const basic_string &other) noexcept {
-        // : m_allocator(other.m_allocator), m_size(other.size()) {
         if (this == &other) {
             return *this;
         }
@@ -45,12 +44,28 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
         }
         m_size = other.m_size;
         copy(other.m_data);
+
         return *this;
     }
 
     constexpr basic_string(basic_string &&other) noexcept
         : m_allocator(std::exchange(other.m_allocator, allocator_type())), m_data(std::exchange(other.m_data, nullptr)),
           m_size(std::exchange(other.m_size, 0)) {}
+
+    constexpr basic_string &operator=(basic_string &&other) noexcept {
+        if (this == &other) {
+            return *this;
+        }
+
+        if (m_data) {
+            m_allocator.deallocate(m_data, m_size);
+        }
+
+        m_size = std::exchange(other.m_size, 0);
+        m_data = std::exchange(other.m_data, nullptr);
+
+        return *this;
+    }
 
     constexpr ~basic_string() noexcept { m_allocator.deallocate(m_data, m_size); }
 
