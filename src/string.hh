@@ -25,11 +25,13 @@ template <typename CharT, typename Traits = std::char_traits<CharT>, typename Al
 class basic_string {
   public:
     using traits_type = Traits;
-    using value_type = typename Traits::char_type;
     using allocator_type = Allocator;
+    using value_type = typename Traits::char_type;
     using size_type = Allocator::size_type;
-    using const_reference = const CharT &;
     using reference = CharT &;
+    using const_reference = const CharT &;
+    using pointer = CharT *;
+    using const_pointer = const CharT *;
     using iterator = normal_iterator<CharT *, basic_string>;
     using const_iterator = normal_iterator<const CharT *, basic_string>;
 
