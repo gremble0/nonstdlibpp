@@ -40,7 +40,14 @@ TEST_CASE("Test string constructors") {
     }
 
     SECTION("Move constructor") {
-        //
+        const char *cstr = "hello world";
+        nstd::string s = cstr;
+        nstd::string moved(std::move(s));
+        REQUIRE(s.data() == nullptr);
+        REQUIRE(moved.data() != nullptr);
+        REQUIRE(s.size() == 0);
+        REQUIRE(moved.size() != 0);
+        REQUIRE(moved == cstr);
     }
 
     SECTION("Copy assignment operator") {
