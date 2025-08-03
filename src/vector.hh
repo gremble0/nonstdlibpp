@@ -64,10 +64,10 @@ template <typename T, typename Allocator = std::allocator<T>> class vector {
     }
 
     constexpr vector &operator=(vector &&other) noexcept {
-        m_allocator = std::exchange(other.get_allocator(), allocator_type());
-        m_data = std::exchange(other.data(), nullptr);
-        m_capacity = std::exchange(other.capacity(), 0);
-        m_size = std::exchange(other.size(), 0);
+        m_allocator = std::exchange(other.m_allocator, allocator_type());
+        m_data = std::exchange(other.m_data, nullptr);
+        m_capacity = std::exchange(other.m_capacity, 0);
+        m_size = std::exchange(other.m_size, 0);
 
         return *this;
     }

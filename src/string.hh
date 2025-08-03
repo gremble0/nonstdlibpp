@@ -42,6 +42,7 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
         if (m_data) {
             m_allocator.deallocate(m_data, m_size);
         }
+
         m_size = other.m_size;
         copy(other.m_data);
 

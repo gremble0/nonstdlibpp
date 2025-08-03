@@ -68,7 +68,8 @@ TEST_CASE("Test vector rule of 5") {
 
     SECTION("Test move assignment operator") {
         nstd::vector vec{1, 2, 3};
-        nstd::vector moved = std::move(vec);
+        nstd::vector moved{1};
+        moved = std::move(vec);
 
         // Check data is now inside the `moved` object
         REQUIRE(moved.size() == 3);
