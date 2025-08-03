@@ -2,6 +2,7 @@
 
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
+#include <stdexcept>
 #include <string>
 
 TEST_CASE("Test string constructors") {
@@ -39,4 +40,12 @@ TEST_CASE("Test string constructors") {
 
 TEST_CASE("Test string iterator") {
     //
+}
+
+TEST_CASE("Trivial accessors") {
+    SECTION("Test at()") {
+        nstd::string s(10, 'h');
+        REQUIRE_NOTHROW(s.at(9));
+        REQUIRE_THROWS_AS(s.at(10), std::out_of_range);
+    }
 }

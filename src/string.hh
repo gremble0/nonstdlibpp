@@ -1,6 +1,7 @@
 #pragma once
 
 #include "normal_iterator.hh"
+#include <format>
 #include <memory>
 
 namespace nstd {
@@ -10,6 +11,8 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
     using allocator_type = Allocator;
     using size_type = Allocator::size_type;
     using pointer = CharT *;
+    using const_reference = const CharT &;
+    using reference = CharT &;
     using iterator = normal_iterator<pointer, basic_string>;
 
     constexpr basic_string() noexcept = default;
@@ -21,6 +24,18 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
     [[nodiscard]] constexpr pointer data() const noexcept { return m_data; }
 
     [[nodiscard]] constexpr size_type size() const noexcept { return m_size; }
+
+    [[nodiscard]] constexpr reference at(size_type i) {
+        if (i >= m_size) {
+            throw std::out_of_range(std::format("Index {} out of range for string of size {}", i, m_size));
+        }
+
+        return m_data[i];
+    }
+
+    [[nodiscard]] constexpr reference operator[](size_type i) noexcept { return m_data[i]; }
+
+    [[nodiscard]] constexpr const_reference operator[](size_type i) const noexcept { return m_data[i]; }
 
   private:
     static constexpr void memset(pointer dest, CharT c, size_type sz) {
