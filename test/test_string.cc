@@ -93,7 +93,7 @@ TEST_CASE("Trivial accessors") {
 }
 
 TEST_CASE("Test equality operator") {
-    std::string s = "hello world";
+    nstd::string s = "hello world";
     REQUIRE(s == "hello world");
     REQUIRE(s != "hello worldd");
     REQUIRE(s != "hello worl");

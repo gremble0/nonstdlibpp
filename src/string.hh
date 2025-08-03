@@ -4,12 +4,28 @@
 
 #include <format>
 #include <memory>
+#include <string>
+#include <type_traits>
 #include <utility>
 
 namespace nstd {
 
-template <typename CharT, typename Allocator = std::allocator<CharT>> class basic_string {
+template <typename CharT>
+concept IsStringCharType = std::is_trivially_copyable_v<CharT> && std::is_trivially_default_constructible_v<CharT> &&
+                           std::is_standard_layout_v<CharT>;
+
+template <typename CharT, typename Traits>
+concept TraitsAreCompatible = std::is_same_v<CharT, typename Traits::char_type>;
+
+template <typename T, typename Allocator>
+concept CanAllocate = std::is_same_v<T, typename Allocator::value_type>;
+
+template <typename CharT, typename Traits = std::char_traits<CharT>, typename Allocator = std::allocator<CharT>>
+    requires IsStringCharType<CharT> && TraitsAreCompatible<CharT, Traits> && CanAllocate<CharT, Allocator>
+class basic_string {
   public:
+    using traits_type = Traits;
+    using value_type = typename Traits::char_type;
     using allocator_type = Allocator;
     using size_type = Allocator::size_type;
     using const_reference = const CharT &;
@@ -157,6 +173,7 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
     size_type m_size{0};
 };
 
+// Some types defined in the STL. Usually you will just use string
 using string = basic_string<char>;
 using wstring = basic_string<wchar_t>;
 using u8string = basic_string<char8_t>;
