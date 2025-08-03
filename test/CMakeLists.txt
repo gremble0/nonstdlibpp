@@ -2,6 +2,7 @@ set(TESTS
   test_vector.cc
   test_shared_ptr.cc
   test_unique_ptr.cc
+  test_string.cc
 )
 
 find_package(Catch2 3 REQUIRED)
