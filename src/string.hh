@@ -84,21 +84,6 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
         return true;
     }
 
-    [[nodiscard]] constexpr bool operator==(const char *other) const noexcept {
-        size_type i = 0;
-        for (; i < m_size; ++i) {
-            if (other[i] == 0 || m_data[i] != other[i]) {
-                return false;
-            }
-        }
-        // Is other longer?
-        if (other[i] != 0) {
-            return false;
-        }
-
-        return true;
-    }
-
   private:
     constexpr void range_check(size_type i) const {
         if (i >= size()) {

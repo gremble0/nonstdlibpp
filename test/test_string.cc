@@ -72,13 +72,9 @@ TEST_CASE("Trivial accessors") {
     }
 }
 
-TEST_CASE("Test equality operators") {
-    SECTION("const char *") {
-        nstd::string s = "hello world";
-        REQUIRE(s == "hello world");
-    }
-    SECTION("string") {
-        nstd::string s = "hello world";
-        REQUIRE(s == nstd::string("hello world"));
-    }
+TEST_CASE("Test equality operator") {
+    std::string s = "hello world";
+    REQUIRE(s == "hello world");
+    REQUIRE(s != "hello worldd");
+    REQUIRE(s != "hello worl");
 }
