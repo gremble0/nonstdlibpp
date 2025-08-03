@@ -32,7 +32,8 @@ TEST_CASE("Test vector rule of 5") {
     SECTION("Test copy assignment operator") {
         nstd::vector vec{1, 2, 3};
         // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
-        nstd::vector copied(vec);
+        nstd::vector copied{1};
+        copied = vec;
 
         // Check data is now inside the `copied` object
         REQUIRE(copied.size() == 3);

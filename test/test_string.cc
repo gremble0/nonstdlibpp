@@ -51,7 +51,12 @@ TEST_CASE("Test string constructors") {
     }
 
     SECTION("Copy assignment operator") {
-        //
+        nstd::string s("hello world");
+        nstd::string copied;
+        copied = s;
+        REQUIRE(s.data() != copied.data());
+        REQUIRE(s.size() == copied.size());
+        REQUIRE(s == copied);
     }
 
     SECTION("Move assignment operator") {
