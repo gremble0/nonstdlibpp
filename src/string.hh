@@ -15,6 +15,7 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
     using const_reference = const CharT &;
     using reference = CharT &;
     using iterator = normal_iterator<CharT *, basic_string>;
+    using const_iterator = normal_iterator<const CharT *, basic_string>;
 
     constexpr basic_string() noexcept = default;
 
@@ -52,6 +53,18 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
         range_check(i);
         return m_data[i];
     }
+
+    [[nodiscard]] constexpr iterator begin() { return iterator(m_data); }
+
+    [[nodiscard]] constexpr const_iterator begin() const { return const_iterator(m_data); }
+
+    [[nodiscard]] constexpr const_iterator cbegin() const { return const_iterator(m_data); }
+
+    [[nodiscard]] constexpr iterator end() { return iterator(m_data + m_size); }
+
+    [[nodiscard]] constexpr const_iterator end() const { return const_iterator(m_data + m_size); }
+
+    [[nodiscard]] constexpr const_iterator cend() const { return const_iterator(m_data + m_size); }
 
     [[nodiscard]] constexpr reference operator[](size_type i) noexcept { return m_data[i]; }
 

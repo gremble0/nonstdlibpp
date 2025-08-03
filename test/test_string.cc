@@ -3,6 +3,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <cstddef>
 #include <stdexcept>
+#include <string>
 
 TEST_CASE("Test string constructors") {
     SECTION("Default constructor") {
@@ -52,7 +53,15 @@ TEST_CASE("Test string constructors") {
 }
 
 TEST_CASE("Test string iterator") {
-    //
+    // Just compare with std as a source of truth
+    const char *cstr = "hello world";
+    nstd::string s1(cstr);
+    std::string s2(cstr);
+    auto it1 = s1.begin();
+    auto it2 = s2.begin();
+    for (; it1 != s1.end() && it2 != s2.end(); ++it1, ++it2) {
+        REQUIRE(*it1 == *it2);
+    }
 }
 
 TEST_CASE("Trivial accessors") {
