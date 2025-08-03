@@ -1,17 +1,23 @@
 #include "string.hh"
 
 #include <catch2/catch_test_macros.hpp>
+#include <cstddef>
+#include <string>
 
 TEST_CASE("Test string constructors") {
     SECTION("Default constructor") {
         nstd::string s;
         REQUIRE(s.data() == nullptr);
         REQUIRE(s.size() == 0);
-        //
     }
 
     SECTION("Size with char") {
-        //
+        size_t s_size = 10;
+        char s_char = 'h';
+        nstd::string s(s_size, s_char);
+        for (size_t i = 0; i < s_size; ++i) {
+            REQUIRE(s[i] == s_char);
+        }
     }
 
     SECTION("Copy constructor") {

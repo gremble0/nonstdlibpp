@@ -2,6 +2,7 @@
 
 #include "normal_iterator.hh"
 #include <memory>
+
 namespace nstd {
 
 template <typename CharT, typename Allocator = std::allocator<CharT>> class basic_string {
@@ -13,11 +14,21 @@ template <typename CharT, typename Allocator = std::allocator<CharT>> class basi
 
     constexpr basic_string() noexcept = default;
 
+    constexpr basic_string(size_type sz, CharT c) noexcept : m_data(m_allocator.allocate(sz)), m_size(sz) {
+        memset(m_data, c, sz);
+    }
+
     [[nodiscard]] constexpr pointer data() const noexcept { return m_data; }
 
     [[nodiscard]] constexpr size_type size() const noexcept { return m_size; }
 
   private:
+    static constexpr void memset(pointer dest, CharT c, size_type sz) {
+        for (size_type i = 0; i < sz; ++i) {
+            dest[i] = c;
+        }
+    }
+
     [[no_unique_address]] allocator_type m_allocator;
     CharT *m_data{nullptr};
     size_type m_size{0};
